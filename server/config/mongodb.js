@@ -6,6 +6,7 @@ const connectDB = async () => {
     console.log(`Database connection error: ${err}`)
   );
 
-  await mongoose.connect(`${process.env.MONGODB_URI}/MERN-Auth`);
+  const uri = process.env.MONGODB_URI.replace(/\/$/, ''); // Remove trailing slash if present
+  await mongoose.connect(`${uri}/MERN-Auth`);
 };
 export default connectDB;

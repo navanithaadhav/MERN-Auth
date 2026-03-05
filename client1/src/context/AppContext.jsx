@@ -22,7 +22,12 @@ export function AppContextProvider({ children }) {
         setUserData(false);
       }
     } catch (error) {
-      toast.error(error.message);
+      // 401 is expected when user is not authenticated - don't show error
+      if (error.response?.status !== 401) {
+        toast.error(error.message);
+      }
+      setIsLoggedIn(false);
+      setUserData(false);
     }
   };
 

@@ -78,7 +78,7 @@ const Login = () => {
           </div>
         
           <p onClick={()=>navigate('/resetpassword')} className='mb-4 text-indigo-500 cursor-pointer'>Forgot Password?</p>
-          <button  className='w-full py-2.5 rounded-full text-white font-medium bg-gradient-to-r from-indigo-500 to-indigo-900'>{state}</button>
+          <button onClick={()=>navigate('/')}  className='w-full py-2.5 rounded-full text-white font-medium bg-gradient-to-r from-indigo-500 to-indigo-900'>{state}</button>
         </form>
         {state === "Sign Up" ? (
           <p  className='text-gray-400 text-center text-xs mt-4'>Already have an account? <span  onClick={()=> setState('Login')} className='text-blue-400 cursor-pointer underline'>Login here</span></p>

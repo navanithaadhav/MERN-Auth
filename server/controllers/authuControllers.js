@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import userModel from "../models/userModel.js";
 import transporter from "../config/nodemailer.js";
+import { EMAIL_VERIFY_TEMPLATE,PASSWORD_RESET_TEMPLATE } from "../config/emailTemplates.js";
 
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -17,6 +18,7 @@ export const register = async (req, res) => {
         .status(400)
         .json({ success: false, message: "User already exists" });
     }
+    // code to convert raw password to hashed password
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await userModel.create({
       name,
@@ -30,11 +32,11 @@ export const register = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days *24hrs*60min*60sec*1000ms
     });
 
-    // sending welcome email
+    // sending welcome email (non-blocking)
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
       to: email,
@@ -42,15 +44,11 @@ export const register = async (req, res) => {
       text: `Hello ${name},\n\nThank you for registering with us! We are excited to have you on board.\n\nBest regards,\nThe Team`,
     };
 
-    await transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log("Error sending email:", error);
-      } else {
-        console.log("Email sent:", info.response);
-      }
-    });
+    transporter.sendMail(mailOptions)
+      .then(info => console.log("Email sent:", info.response))
+      .catch(error => console.log("Error sending email:", error));
 
-    return res.status(201).json({ message: "User created successfully" });
+    return res.status(201).json({ success: true, message: "User created successfully" });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -79,7 +77,7 @@ export const login = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days *24hrs*60min*60sec*1000ms
     });
     return res.status(200).json({ success: true, message: "Login successful" });
@@ -92,7 +90,7 @@ export const logout = async (req, res) => {
     res.clearCookie("token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
     return res
       .status(200)
@@ -121,7 +119,8 @@ export const sendVerifyOtp = async (req, res) => {
       from: process.env.SENDER_EMAIL,
       to: user.email,
       subject: "Account Verification OTP",
-      text: `Your OTP is ${otp}.verify your account using this otp.`
+      text: `Your OTP is ${otp}.verify your account using this otp.`,
+      html: EMAIL_VERIFY_TEMPLATE.replace("{{email}}", user.email).replace("{{otp}}", otp)
     }
     await transporter.sendMail(mailOptions);
     return res.status(200).json({ success: true, message: "OTP sent to your email" });
@@ -143,7 +142,11 @@ export const verifyEmail = async (req, res) => {
     if (!user) {
       return res.status(400).json({ success: false, message: "Invalid User" });
     }
-    if (user.verifyOtp === '' || user.verifyOtp !== otp) {
+    // Trim and convert both to string for reliable comparison
+    const storedOtp = String(user.verifyOtp).trim();
+    const inputOtp = String(otp).trim();
+    
+    if (storedOtp === '' || storedOtp !== inputOtp) {
       return res
         .status(400)
         .json({ success: false, message: "Invalid OTP" });
@@ -193,7 +196,8 @@ export const sendResetOtp = async (req, res) => {
       from: process.env.SENDER_EMAIL,
       to: user.email,
       subject: "Password reset  OTP",
-      text: `Your OTP for restting your password is ${otp}.Use this otp to proceed with resetting your password.`
+      text: `Your OTP for restting your password is ${otp}.Use this otp to proceed with resetting your password.`,
+      html: PASSWORD_RESET_TEMPLATE.replace("{{email}}", user.email).replace("{{otp}}", otp)
     }
     await transporter.sendMail(mailOptions);
     res.status(200).json({ success: true, message: "OTP sent to your email" });

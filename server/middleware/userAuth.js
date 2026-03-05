@@ -11,7 +11,7 @@ const userAuth = async (req, res, next) => {
       req.userId = decoded.id; // Attach userId to req, not req.body
       next();
     } else {
-      return res.json({ success: false, message: "Not Authorized.Login Again" });
+      return res.json ({ success: false, message: "Not Authorized.Login Again" });
     }
   } catch (error) {
     return res.status(401).json({ success: false, message: error.message });
