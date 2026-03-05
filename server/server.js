@@ -10,7 +10,12 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 connectDB();
 
-const allowOrigins = ["http://localhost:5173"];
+// Allow both local and production frontend URLs
+const allowOrigins = [
+  "http://localhost:5173",
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: allowOrigins , credentials: true }));
