@@ -14,11 +14,11 @@ connectDB();
 const allowOrigins = [
   "http://localhost:5173",
   process.env.FRONTEND_URL
-].filter(Boolean);
+].filter(Boolean) as string[];
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: allowOrigins , credentials: true }));
+app.use(cors({ origin: allowOrigins, credentials: true }));
 //api end point
 app.get("/", (req, res) => {
   res.send("API is working🤩🤩🤩🤩🤩🤩!");

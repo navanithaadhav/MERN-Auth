@@ -177,7 +177,7 @@ export const isAuthenticated = async (req: Request, res: Response): Promise<any>
 
     return res.status(200).json({ success: true });
   }
-  catch (error) {
+  catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
   }
 }
