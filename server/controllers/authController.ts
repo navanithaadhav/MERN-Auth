@@ -13,12 +13,14 @@ export const register = async (req: Request, res: Response): Promise<any> => {
   const { name, email, password } = req.body;
   try {
     if (!name || !email || !password) {
+      console.warn("Registration failed: Missing fields", { name, email, hasPassword: !!password });
       return res
         .status(400)
         .json({ success: false, message: "Please fill all fields" });
     }
     const existingUser = await userModel.findOne({ email });
     if (existingUser) {
+      console.warn("Registration failed: User already exists", { email });
       return res
         .status(400)
         .json({ success: false, message: "User already exists" });
