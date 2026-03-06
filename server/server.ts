@@ -13,7 +13,7 @@ connectDB();
 // Allow both local and production frontend URLs
 const allowOrigins = [
   "http://localhost:5173",
-  process.env.FRONTEND_URL
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : [])
 ].filter(Boolean) as string[];
 
 app.use(express.json());
