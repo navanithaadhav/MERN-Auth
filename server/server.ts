@@ -11,10 +11,14 @@ const PORT = process.env.PORT || 4000;
 connectDB();
 
 // Allow both local and production frontend URLs
+const rawOrigins = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : [];
 const allowOrigins = [
   "http://localhost:5173",
-  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : [])
+  ...rawOrigins.map(url => url.trim().replace(/\/$/, "")) // Remove whitespace and trailing slashes
 ].filter(Boolean) as string[];
+
+console.log("Allowed Origins:", allowOrigins);
+console.log("Current Environment:", process.env.NODE_ENV);
 
 app.use(express.json());
 app.use(cookieParser());
