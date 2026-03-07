@@ -18,8 +18,6 @@ const Login = () => {
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
       e.preventDefault();
-
-      axios.defaults.withCredentials = true; // Ensure cookies are sent with requests
       if (state === "Sign Up") {
         const { data } = await axios.post(backendUrl + '/api/auth/register', {
           name,

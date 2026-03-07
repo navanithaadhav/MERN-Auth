@@ -12,12 +12,13 @@ export interface AppContextType {
   getUserData: () => Promise<void>;
 }
 
+axios.defaults.withCredentials = true;
+
 // Only named exports, no default export
 export const AppContext = createContext<AppContextType>(null as any);
 
 export function AppContextProvider({ children }: { children: React.ReactNode }) {
-  axios.defaults.withCredentials = true;
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(false);
 
@@ -46,7 +47,9 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       const { data } = await axios.get(backendUrl + '/api/user/data');
       data.success ? setUserData(data.userData) : toast.error(data.message);
     } catch (error: any) {
-      toast.error(error.message);
+      if (error.response?.status !== 401) {
+        toast.error(error.message);
+      }
     }
   };
 
